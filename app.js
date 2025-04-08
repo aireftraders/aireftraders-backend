@@ -11,6 +11,7 @@ const withdrawalRoutes = require('./routes/withdrawalRoutes'); // Ensure this fi
 const announcementRoutes = require('./routes/announcementRoutes'); // Ensure this file exists
 const streakRoutes = require('./routes/streakRoutes'); // Ensure this file exists
 const errorHandler = require('./middlewares/errorHandler');
+const bodyParser = require('body-parser');
 
 const app = express();
 
@@ -27,6 +28,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

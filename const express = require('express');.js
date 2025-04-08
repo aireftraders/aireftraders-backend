@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,13 +20,13 @@ app.post('/api/send-2fa-code', async (req, res) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'your-email@gmail.com', // Replace with your email
-      pass: 'your-email-password', // Replace with your email password
+      user: process.env.EMAIL_USER, // Use environment variable
+      pass: process.env.EMAIL_PASS, // Use environment variable
     },
   });
 
   const mailOptions = {
-    from: 'your-email@gmail.com',
+    from: process.env.EMAIL_USER,
     to: email,
     subject: 'Your 2FA Code',
     text: `Your 2FA code is: ${code}`,
@@ -55,5 +56,13 @@ app.get('/api/sent-2fa-emails', (req, res) => {
   res.status(200).json({ emails: sentEmails });
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('Shutting down server...');
+  server.close(() => process.exit(0));
+});
