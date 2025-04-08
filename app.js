@@ -19,7 +19,14 @@ connectDB();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+
+const corsOptions = {
+    origin: 'https://v0-new-project-kpsjngutvqx.vercel.app',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
