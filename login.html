@@ -1,0 +1,64 @@
+// ...existing code...
+<script>
+  async function apiCall(endpoint, method, body) {
+    try {
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'An error occurred');
+      }
+      return result;
+    } catch (error) {
+      console.error(`Error in ${endpoint}:`, error);
+      alert(error.message || 'An unexpected error occurred. Please try again.');
+      throw error;
+    }
+  }
+
+  async function fetchAdminEmail() {
+    try {
+      const response = await fetch('/api/admin-email', { method: 'GET' });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to fetch admin email.');
+      }
+      return result.email;
+    } catch (error) {
+      console.error('Error fetching admin email:', error);
+      alert('Unable to fetch admin email. Please try again later.');
+      throw error;
+    }
+  }
+
+  async function send2FACode() {
+    try {
+      const email = await fetchAdminEmail();
+      await apiCall('/api/send-2fa-code', 'POST', { email });
+      alert('2FA code sent to the admin email.');
+    } catch {
+      // Error already handled in apiCall or fetchAdminEmail
+    }
+  }
+
+  async function verify2FACode(code) {
+    if (!code) {
+      alert('Please enter the 2FA code.');
+      return;
+    }
+    try {
+      const email = await fetchAdminEmail();
+      await apiCall('/api/verify-2fa-code', 'POST', { email, code });
+      alert('2FA code verified successfully.');
+      window.location.href = '/admin-panel'; // Redirect to admin panel
+    } catch {
+      // Error already handled in apiCall or fetchAdminEmail
+    }
+  }
+</script>
+// ...existing code...
