@@ -1,0 +1,39 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const connectDB = require('./config/database');
+const apiRoutes = require('./routes/apiRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const webRoutes = require('./routes/webRoutes');
+const withdrawalRoutes = require('./routes/withdrawalRoutes'); // Ensure this file exists
+const announcementRoutes = require('./routes/announcementRoutes'); // Ensure this file exists
+const streakRoutes = require('./routes/streakRoutes'); // Ensure this file exists
+const errorHandler = require('./middlewares/errorHandler');
+
+const app = express();
+
+// Connect to database
+connectDB();
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(morgan('dev'));
+
+// Routes
+app.use('/', webRoutes);
+app.use('/api', apiRoutes);
+app.use('/admin', adminRoutes);
+app.use('/api/withdrawals', withdrawalRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/streak', streakRoutes);
+
+// Error handling
+app.use(errorHandler);
+
+module.exports = app;
