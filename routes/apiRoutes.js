@@ -36,6 +36,12 @@ router.use(authenticate);
 router.get('/ads/:gameType', controllers.ad.getAdForGame);
 router.post('/ads/view', controllers.ad.recordAdView);
 
+// Add route for recording game results
+router.post('/game/result', controllers.game.recordGameResult);
+
+// Add route for fetching user profile
+router.get('/user/profile', controllers.user.getUserProfile);
+
 // ... rest of your routes remain the same ...
 
 module.exports = router;
