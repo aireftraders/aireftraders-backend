@@ -42,6 +42,9 @@ router.post('/game/result', controllers.game.recordGameResult);
 // Add route for fetching user profile
 router.get('/user/profile', controllers.user.getUserProfile);
 
+// Add route for user login
+router.post('/user/login', controllers.user.login);
+
 // ... rest of your routes remain the same ...
 
 module.exports = router;

@@ -13,14 +13,14 @@ exports.getAdForGame = async (req, res) => {
       });
     }
 
-    // Basic implementation - replace with your actual ad logic
-    const ad = {
-      id: 'sample-ad',
-      gameType,
-      content: `Special offer for ${gameType} players!`,
-      imageUrl: 'https://example.com/ads/sample.jpg',
-      duration: 30
-    };
+    // Fetch ad from the database
+    const ad = await Ad.findOne({ gameType });
+    if (!ad) {
+      return res.status(404).json({
+        success: false,
+        error: 'No ad found for the specified game type'
+      });
+    }
 
     res.json({
       success: true,
@@ -36,16 +36,27 @@ exports.getAdForGame = async (req, res) => {
 
 exports.recordAdView = async (req, res) => {
   try {
+    const { adId, userId } = req.body;
+
     // Validate request body
-    if (!req.body || Object.keys(req.body).length === 0) {
+    if (!adId || !userId) {
       return res.status(400).json({
         success: false,
-        error: 'Request body is required'
+        error: 'Ad ID and User ID are required'
       });
     }
 
-    // Basic implementation - replace with your actual tracking logic
-    console.log('Ad view recorded:', req.body);
+    // Update ad view count in the database
+    const ad = await Ad.findById(adId);
+    if (!ad) {
+      return res.status(404).json({
+        success: false,
+        error: 'Ad not found'
+      });
+    }
+
+    ad.views = (ad.views || 0) + 1;
+    await ad.save();
 
     res.json({ 
       success: true,
