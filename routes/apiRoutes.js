@@ -45,6 +45,9 @@ router.get('/user/profile', controllers.user.getUserProfile);
 // Add route for user login
 router.post('/user/login', controllers.user.login);
 
+// Add route for creating a new user
+router.post('/api/user', controllers.user.createUser);
+
 // ... rest of your routes remain the same ...
 
 module.exports = router;

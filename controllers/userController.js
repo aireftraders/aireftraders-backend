@@ -45,3 +45,23 @@ exports.login = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.createUser = async (req, res) => {
+    const { username, password, email } = req.body;
+
+    try {
+        // Check if user already exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already taken' });
+        }
+
+        // Create new user
+        const newUser = new User({ username, password, email });
+        await newUser.save();
+
+        res.status(201).json({ message: 'User created successfully', user: newUser });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
