@@ -177,6 +177,44 @@ app.post('/api/notifications', (req, res) => {
   }
 });
 
+// Payment webhook
+app.post('/api/payments/callback', (req, res) => {
+  const secretHash = process.env.FLW_SECRET_HASH;
+  const signature = req.headers['verif-hash'];
+
+  if (!signature || signature !== secretHash) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  console.log('Payment webhook received:', req.body);
+  // Process the payment event here
+  res.status(200).send('Webhook received');
+});
+
+// Transfer webhook
+app.post('/api/withdrawals/callback', (req, res) => {
+  const secretHash = process.env.FLW_SECRET_HASH;
+  const signature = req.headers['verif-hash'];
+
+  if (!signature || signature !== secretHash) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  console.log('Transfer webhook received:', req.body);
+  // Process the transfer event here
+  res.status(200).send('Webhook received');
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is healthy' });
+});
+
+// Catch-all route for undefined endpoints
+app.use((req, res) => {
+  res.status(404).json({ message: 'Endpoint not found' });
+});
+
 // Server Initialization
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
