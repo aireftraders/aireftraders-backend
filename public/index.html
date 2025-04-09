@@ -39,4 +39,25 @@
     <!-- Monetag Links -->
     <a href="https://stenexeb.xyz/4/9191531" target="_blank">Monetag Link 1</a>
     <a href="https://stenexeb.xyz/4/9191510" target="_blank">Monetag Link 2</a>
+
+    <script type="text/javascript">
+        async function fetchUserData() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/user/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Telegram-Init-Data': window.Telegram.WebApp.initData || 'test'
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to fetch user data');
+                const data = await response.json();
+                Object.assign(userData, data);
+                updateUI();
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                showNotification('⚠️ Failed to load user data. Check your connection.');
+            }
+        }
+    </script>
 </body>
