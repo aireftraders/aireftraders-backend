@@ -49,6 +49,8 @@
         // Ensure Telegram Init Data is set correctly
         const telegramInitData = window.Telegram?.WebApp?.initData || 'test';
 
+        console.log('Telegram Init Data being sent:', telegramInitData);
+
         async function fetchUserData() {
             try {
                 console.log('Attempting to fetch user data with Telegram Init Data:', telegramInitData);

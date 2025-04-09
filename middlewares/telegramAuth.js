@@ -6,6 +6,7 @@ exports.verifyTelegramAuth = (req, res, next) => {
   if (!initData) return res.status(401).json({ error: 'Unauthorized' });
 
   console.log('Received Telegram-Init-Data header:', initData);
+  console.log('Received Telegram-Init-Data header:', req.headers['telegram-init-data']);
 
   // Verification logic for Telegram Init Data
   const secretKey = process.env.TELEGRAM_BOT_TOKEN; // Ensure this is set in your environment variables
