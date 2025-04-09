@@ -43,17 +43,32 @@
     <script type="text/javascript">
         const BACKEND_URL = 'https://aireftraders-backend.onrender.com'; // Updated with the actual backend URL
 
+        // Debugging Telegram Init Data
+        console.log('Telegram Init Data:', window.Telegram?.WebApp?.initData);
+
+        // Ensure Telegram Init Data is set correctly
+        const telegramInitData = window.Telegram?.WebApp?.initData || 'test';
+
         async function fetchUserData() {
             try {
+                console.log('Attempting to fetch user data with Telegram Init Data:', telegramInitData);
                 const response = await fetch(`${BACKEND_URL}/user/profile`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Telegram-Init-Data': window.Telegram.WebApp.initData || 'test'
+                        'Telegram-Init-Data': telegramInitData
                     }
                 });
-                if (!response.ok) throw new Error('Failed to fetch user data');
+
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Failed to fetch user data:', response.status, errorText);
+                    throw new Error(`Failed to fetch user data: ${response.statusText}`);
+                }
+
                 const data = await response.json();
+                console.log('Fetched user data:', data);
                 Object.assign(userData, data);
                 updateUI();
             } catch (error) {
