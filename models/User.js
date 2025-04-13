@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
+// Sub-schemas
 const AdViewSchema = new mongoose.Schema({
   adId: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -39,7 +42,7 @@ const BankDetailsSchema = new mongoose.Schema({
   bankName: {
     type: String,
     required: function() {
-      return this.verified; // Required only when verified is true
+      return this.verified;
     }
   },
   accountNumber: {
@@ -49,7 +52,6 @@ const BankDetailsSchema = new mongoose.Schema({
     },
     validate: {
       validator: function(v) {
-        // Basic Nigerian account number validation (10 digits)
         return /^\d{10}$/.test(v);
       },
       message: props => `${props.value} is not a valid account number!`
@@ -67,11 +69,36 @@ const BankDetailsSchema = new mongoose.Schema({
   }
 });
 
+// Main User Schema
 const UserSchema = new mongoose.Schema({
+  // Authentication
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6
+  },
+  tokens: [{
+    token: {
+      type: String,
+      required: true
+    }
+  }],
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+
   // Telegram Information
   telegramId: { 
     type: String, 
-    required: true, 
     unique: true,
     index: true
   },
@@ -82,8 +109,7 @@ const UserSchema = new mongoose.Schema({
   },
   firstName: {
     type: String,
-    trim: true,
-    required: true
+    trim: true
   },
   lastName: {
     type: String,
@@ -208,22 +234,42 @@ const UserSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Indexes for better performance
+// Indexes
 UserSchema.index({ isVerified: 1 });
 UserSchema.index({ 'bankDetails.verified': 1 });
 UserSchema.index({ createdAt: 1 });
 
-// Virtual for full name
+// Virtuals
 UserSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`.trim();
 });
 
-// Pre-save hook for lastLogin updates
-UserSchema.pre('save', function(next) {
-  if (this.isModified('lastLogin') || this.isNew) {
-    // Add streak logic here if needed
+// Pre-save hooks
+UserSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 8);
   }
   next();
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// Methods
+UserSchema.methods.generateAuthToken = async function() {
+  const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
+  this.tokens = this.tokens.concat({ token });
+  await this.save();
+  return token;
+};
+
+// Statics
+UserSchema.statics.findByCredentials = async function(email, password) {
+  const user = await this.findOne({ email });
+  if (!user) throw new Error('Unable to login');
+  
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new Error('Unable to login');
+  
+  return user;
+};
+
+const User = mongoose.model('User', UserSchema);
+module.exports = User;

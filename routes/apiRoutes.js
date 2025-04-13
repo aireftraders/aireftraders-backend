@@ -5,7 +5,9 @@ const { authenticate } = require('../middlewares/auth');
 // Import controllers with validation
 const getController = (name) => {
   try {
+    console.log(`Attempting to load controller: ${name}`);
     const controller = require(`../controllers/${name}Controller`);
+    console.log(`Successfully loaded controller: ${name}`);
     if (!controller) throw new Error(`Controller ${name} not found`);
     return controller;
   } catch (error) {
@@ -24,20 +26,33 @@ const controllers = {
   bank: getController('bank'),
   payment: getController('payment'),
   referral: getController('referral'),
-  trading: getController('trading'),
-  game: getController('game'),
-  ad: getController('ad')
+  trading: getController('trading')
 };
+
+console.log('Loaded controllers:', controllers);
+
+const adController = require('../controllers/adController');
+const gameController = require('../controllers/gameController');
+
+// Add temporary debugging endpoint for ads before authentication middleware
+router.get('/debug/ads', async (req, res) => {
+  try {
+    const ads = await require('../models/Ad').find();
+    res.json({ success: true, ads });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Temporarily bypass authentication for ad routes
+router.get('/ads/:gameType', adController.getAdForGame);
+router.post('/ads/view', adController.recordAdView);
 
 // Apply authentication middleware
 router.use(authenticate);
 
-// Ad routes (now with fallback protection)
-router.get('/ads/:gameType', controllers.ad.getAdForGame);
-router.post('/ads/view', controllers.ad.recordAdView);
-
-// Add route for recording game results
-router.post('/game/result', controllers.game.recordGameResult);
+// Replace the game route to directly use gameController
+router.post('/game/result', gameController.recordGameResult);
 
 // Add route for fetching user profile
 router.get('/user/profile', controllers.user.getUserProfile);
@@ -47,7 +62,5 @@ router.post('/user/login', controllers.user.login);
 
 // Add route for creating a new user
 router.post('/api/user', controllers.user.createUser);
-
-// ... rest of your routes remain the same ...
 
 module.exports = router;

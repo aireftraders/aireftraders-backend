@@ -1,21 +1,58 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-exports.authenticate = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  console.log('Authorization Header:', req.header('Authorization'));
-  console.log('Extracted Token:', token);
-
-  if (!token) {
-    return res.status(401).json({ error: 'Access denied' });
-  }
-
+// Telegram Auth Middleware
+const verifyTelegramAuth = (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded Token:', decoded);
-    req.user = decoded;
+    // Your Telegram auth logic here
     next();
   } catch (error) {
-    console.error('Token Verification Error:', error.message);
-    res.status(400).json({ error: 'Invalid token' });
+    res.status(401).json({ error: 'Telegram authentication failed' });
   }
+};
+
+// Ensure Admin Middleware
+const ensureAdmin = (req, res, next) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+
+// Authentication Middleware
+const authenticate = async (req, res, next) => {
+  try {
+    console.log('Authenticate middleware triggered for route:', req.originalUrl);
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) throw new Error();
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({
+      _id: decoded._id,
+      'tokens.token': token
+    });
+
+    if (!user) throw new Error();
+
+    req.token = token;
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Please authenticate' });
+  }
+};
+
+// Is Admin Check Middleware
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    return next();
+  }
+  res.status(403).json({ error: 'Admin privileges required' });
+};
+
+module.exports = {
+  verifyTelegramAuth,
+  ensureAdmin,
+  authenticate,
+  isAdmin
 };

@@ -1,153 +1,91 @@
 require('dotenv').config();
 const express = require('express');
-const cron = require('node-cron');
+const mongoose = require('mongoose');
 const path = require('path');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
-const app = require('./app');
-const PORT = process.env.PORT || 5000;
+const connectDB = require('./config/database');
+const adRoutes = require('./routes/adRoutes');
 
-// Enable CORS for the frontend
+// Initialize Express app
+const app = express();
+
+// Connect to the database
+connectDB();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Enable CORS for development
+if (process.env.NODE_ENV !== 'production') {
+  app.use(cors());
+}
+
+// Update CORS configuration to include the specific frontend URL
 app.use(cors({
-  origin: process.env.WEBAPP_URL, // Frontend URL from .env
+  origin: [
+    'https://v0-new-project-kpsjngutvqx.vercel.app',
+    'https://aireftraders-backend.onrender.com'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
-// Serve static files (including favicon)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the project folder
+app.use(express.static(path.join(__dirname, 'project')));
 
-// Scheduled Tasks
-cron.schedule('0 0 * * *', () => {
-  console.log('Running daily streak check...');
-  require('./services/streakService').checkStreaks();
+// Log all incoming requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
 });
 
-cron.schedule('*/5 * * * *', () => {
-  console.log('Checking payment batches...');
-  require('./services/batchMonitor').checkBatches();
+// Use the adRoutes with a base prefix
+app.use('/api', adRoutes);
+
+// Health check route
+app.get('/api/health', (req, res) => {
+  console.log('[ROUTE HIT] GET /api/health');
+  res.json({ success: true, message: 'Server is running' });
 });
 
-cron.schedule('0 * * * *', () => {
-  console.log('Cleaning up expired sessions...');
-  require('./services/sessionService').cleanupExpiredSessions();
-});
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendRoot = path.join(__dirname, 'public'); // Assuming final frontend files are here
+  app.use(express.static(frontendRoot));
 
-// Mock admin credentials from .env file
-const adminCredentials = {
-  username: 'admin',
-  password: process.env.ADMIN_PASSWORD,
-  email: process.env.ADMIN_EMAIL
-};
-
-// Store 2FA codes temporarily
-const twoFACodes = {};
-
-// API to send 2FA code
-app.post('/api/send-2fa-code', (req, res) => {
-  const { email } = req.body;
-
-  if (email !== adminCredentials.email) {
-    return res.status(400).json({ success: false, message: 'Invalid email address.' });
-  }
-
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  twoFACodes[email] = code;
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: adminCredentials.email,
-      pass: adminCredentials.password
-    }
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendRoot, 'index.html'));
   });
+}
 
-  const mailOptions = {
-    from: adminCredentials.email,
-    to: email,
-    subject: 'Your 2FA Code',
-    text: `Your 2FA code is: ${code}`
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error('Error sending email:', error);
-      return res.status(500).json({ success: false, message: 'Failed to send email.' });
-    }
-    console.log('Email sent:', info.response);
-    res.json({ success: true });
-  });
+// Catch 404 errors for undefined routes
+app.use((req, res, next) => {
+  console.log(`404 Error: ${req.method} ${req.url} not found`);
+  res.status(404).json({ success: false, error: 'Route not found' });
 });
 
-// API to verify 2FA code
-app.post('/api/verify-2fa-code', (req, res) => {
-  const { email, code } = req.body;
-
-  if (twoFACodes[email] === code) {
-    delete twoFACodes[email];
-    return res.json({ success: true });
-  }
-
-  res.status(400).json({ success: false, message: 'Invalid 2FA code.' });
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.stack || err.message);
+  res.status(500).json({ success: false, error: 'Internal server error' });
 });
 
-// Payment webhook
-app.post('/api/payments/callback', (req, res) => {
-  const secretHash = process.env.FLW_SECRET_HASH;
-  const signature = req.headers['verif-hash'];
-
-  if (!signature || signature !== secretHash) {
-    return res.status(401).send('Unauthorized');
-  }
-
-  console.log('Payment webhook received:', req.body);
-  res.status(200).send('Webhook received');
-});
-
-// Transfer webhook
-app.post('/api/withdrawals/callback', (req, res) => {
-  const secretHash = process.env.FLW_SECRET_HASH;
-  const signature = req.headers['verif-hash'];
-
-  if (!signature || signature !== secretHash) {
-    return res.status(401).send('Unauthorized');
-  }
-
-  console.log('Transfer webhook received:', req.body);
-  res.status(200).send('Webhook received');
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is healthy' });
-});
-
-// Catch-all route for undefined endpoints
-app.use((req, res) => {
-  res.status(404).json({ message: 'Endpoint not found' });
-});
-
-// Server Initialization
+// Start the server
+const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-server.on('error', (err) => {
+}).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use. Please use a different port.`);
-    process.exit(1);
+    console.error(`Port ${PORT} is already in use. Trying a different port...`);
+    const newPort = parseInt(PORT) + 1;
+    app.listen(newPort, () => {
+      console.log(`Server running on port ${newPort}`);
+    }).on('error', (err) => {
+      console.error('Server error:', err);
+    });
   } else {
-    throw err;
+    console.error('Server error:', err);
   }
-});
-
-// Error Handlers
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err);
-  server.close(() => process.exit(1));
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  server.close(() => process.exit(1));
 });

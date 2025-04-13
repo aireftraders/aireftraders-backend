@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit FAQ Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit FAQ Page</h1>
+    <textarea id="faqContent"></textarea>
+    <button class="button" onclick="saveFAQ()">Save</button>
+    <script>
+        // Load existing content (mock)
+        const existingFAQContent = "This is the FAQ page content.";
+        document.getElementById('faqContent').value = existingFAQContent;
+
+        // Save the updated content
+        function saveFAQ() {
+            const updatedContent = document.getElementById('faqContent').value.trim();
+            if (updatedContent) {
+                alert('FAQ page updated successfully!');
+                // TODO: Implement logic to save the updated content
+            } else {
+                alert('Content cannot be empty.');
+            }
+        }
+    </script>
+</body>
+</html>

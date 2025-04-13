@@ -1,82 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <!-- AdSense Code -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1071594299824167" crossorigin="anonymous"></script>
-
-  <!-- Meta Tag for AdSense -->
-  <meta name="google-adsense-account" content="ca-pub-1071594299824167">
-
-  <!-- Meta Tag for Coinzilla -->
-  <meta name="coinzilla" content="c723530ee9df07119a055661547611ee">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <script type="text/javascript">
-    atOptions = {
-        'key' : '3025a77b3723f7828568749e1f3519ea',
-        'format' : 'iframe',
-        'height' : 250,
-        'width' : 300,
-        'params' : {}
-    };
-  </script>
-  <script type="text/javascript" src="//innumerablemakeupreligious.com/3025a77b3723f7828568749e1f3519ea/invoke.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI REF-TRADERS</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Adsterra Ad Code -->
-    <script type="text/javascript">
-        atOptions = {
-            'key' : '3025a77b3723f7828568749e1f3519ea',
-            'format' : 'iframe',
-            'height' : 250,
-            'width' : 300,
-            'params' : {}
-        };
-    </script>
-    <script type="text/javascript" src="//innumerablemakeupreligious.com/3025a77b3723f7828568749e1f3519ea/invoke.js"></script>
+    <!-- Include Header -->
+    <div id="header"></div>
 
-    <!-- Monetag Links -->
-    <a href="https://stenexeb.xyz/4/9191531" target="_blank">Monetag Link 1</a>
-    <a href="https://stenexeb.xyz/4/9191510" target="_blank">Monetag Link 2</a>
+    <!-- Main Content -->
+    <div id="main-content">
+        <!-- Dashboard Tab -->
+        <div id="dashboardTab" class="tab-content"></div>
 
-    <script type="text/javascript">
-        const BACKEND_URL = 'https://aireftraders-backend.onrender.com'; // Updated with the actual backend URL
+        <!-- Trading Tab -->
+        <div id="tradingTab" class="tab-content"></div>
 
-        // Debugging Telegram Init Data
-        console.log('Telegram Init Data:', window.Telegram?.WebApp?.initData);
+        <!-- Games Tab -->
+        <div id="gamesTab" class="tab-content"></div>
 
-        // Ensure Telegram Init Data is set correctly
-        const telegramInitData = window.Telegram?.WebApp?.initData || 'test';
+        <!-- Info Tab -->
+        <div id="infoTab" class="tab-content"></div>
 
-        console.log('Telegram Init Data being sent:', telegramInitData);
+        <!-- Support Tab -->
+        <div id="supportTab" class="tab-content"></div>
+    </div>
 
-        async function fetchUserData() {
-            try {
-                console.log('Attempting to fetch user data with Telegram Init Data:', telegramInitData);
-                const response = await fetch(`${BACKEND_URL}/user/profile`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Telegram-Init-Data': telegramInitData
-                    }
-                });
+    <!-- Include Modals -->
+    <div id="modals"></div>
 
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Failed to fetch user data:', response.status, errorText);
-                    throw new Error(`Failed to fetch user data: ${response.statusText}`);
-                }
+    <!-- Include Testimonials -->
+    <div id="testimonials"></div>
 
-                const data = await response.json();
-                console.log('Fetched user data:', data);
-                Object.assign(userData, data);
-                updateUI();
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                showNotification('⚠️ Failed to load user data. Check your connection.');
-            }
-        }
-    </script>
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/ad-system.js"></script>
+    <script src="js/streak-system.js"></script>
+    <script src="js/testimonials.js"></script>
 </body>
+</html>

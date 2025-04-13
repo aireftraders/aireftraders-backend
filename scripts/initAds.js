@@ -1,26 +1,23 @@
 const Ad = require('../models/Ad');
 
-const adNetworks = [
+const ads = [
   {
     network: "Adsterra",
-    code: "ADST",
-    description: "Premium ad network with high-paying ads",
-    frequency: 2,
-    earningsPerView: 0.75
+    link: "https://innumerablemakeupreligious.com/mtkt19h3s?key=4e6c81f7385a8bacf3617fadee0ded8f",
+    gameTypes: ["memory", "dice"]
   },
   {
     network: "Monetag",
-    code: "MNTG",
-    description: "High-converting video ads",
-    frequency: 3,
-    earningsPerView: 0.60
+    link: "https://whoockeg.top/4/9191531",
+    gameTypes: ["snake", "trivia"]
   },
   {
     network: "Cointzilla",
     code: "CNTZ",
     description: "Crypto-focused ad network",
     frequency: 1,
-    earningsPerView: 0.55
+    earningsPerView: 0.55,
+    gameTypes: ["all"]
   }
 ];
 
@@ -28,7 +25,7 @@ async function initializeAds() {
   try {
     const count = await Ad.countDocuments();
     if (count === 0) {
-      await Ad.insertMany(adNetworks);
+      await Ad.insertMany(ads);
       console.log('Ad networks initialized successfully');
     }
   } catch (error) {

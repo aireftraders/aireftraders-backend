@@ -64,6 +64,9 @@ async function initializeDatabase() {
 
     // Create admin user
     const admin = await User.create({
+      email: 'admin@aireftraders.com',
+      password: 'secureAdminPassword123',
+      name: 'Admin User',
       telegramId: process.env.ADMIN_TELEGRAM_ID,
       firstName: 'Admin',
       isAdmin: true,

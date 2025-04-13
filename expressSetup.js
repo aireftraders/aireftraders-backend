@@ -1,12 +1,39 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
 
 const codes = {}; // Store email and 2FA codes temporarily
+const codesExpiry = {}; // Store expiry times for 2FA codes
+
+// Rate limiter for 2FA code requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: 'Too many requests, please try again later.'
+});
+
+app.use('/api/send-2fa-code', limiter);
+
+// Middleware to clean up expired codes
+setInterval(() => {
+  const now = Date.now();
+  for (const email in codesExpiry) {
+    if (codesExpiry[email] < now) {
+      delete codes[email];
+      delete codesExpiry[email];
+    }
+  }
+}, 60 * 1000); // Run every minute
+
+// Validate environment variables
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  throw new Error('EMAIL_USER and EMAIL_PASS must be set in environment variables.');
+}
 
 app.post('/api/send-2fa-code', async (req, res) => {
   const { email } = req.body;
@@ -16,6 +43,7 @@ app.post('/api/send-2fa-code', async (req, res) => {
 
   const code = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit code
   codes[email] = code;
+  codesExpiry[email] = Date.now() + 5 * 60 * 1000; // Set expiry time to 5 minutes
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -45,6 +73,7 @@ app.post('/api/verify-2fa-code', (req, res) => {
   const { email, code } = req.body;
   if (codes[email] && codes[email] === parseInt(code, 10)) {
     delete codes[email]; // Remove code after successful verification
+    delete codesExpiry[email]; // Remove expiry time after successful verification
     res.status(200).json({ message: '2FA code verified successfully.' });
   } else {
     res.status(400).json({ message: 'Invalid 2FA code.' });

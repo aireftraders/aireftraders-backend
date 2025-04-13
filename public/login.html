@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .login-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Admin Login</h2>
+        <form id="loginForm" onsubmit="return validateLogin()">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="errorMessage" style="color: red; display: none; text-align: center;">Invalid credentials</p>
+    </div>
+    <div id="2FAContainer" style="display: none;">
+        <h3>Two-Factor Authentication</h3>
+        <p>Enter the 6-digit code sent to your email or authenticator app:</p>
+        <input type="text" id="twoFACode" maxlength="6" required>
+        <button onclick="validate2FA()">Verify</button>
+    </div>
+    <script>
+        const backendURL = 'http://localhost:5000'; // Replace with deployed backend URL when available
+        const useMockBackend = true; // Set to true to simulate backend responses
+
+        function validateLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const storedUsername = localStorage.getItem('adminUsername') || 'admin';
+            const storedPassword = localStorage.getItem('adminPassword') || 'password';
+
+            if (username === storedUsername && password === storedPassword) {
+                sessionStorage.setItem('isAdmin', true);
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('2FAContainer').style.display = 'block';
+                send2FACode(); // Simulate sending a 2FA code
+                return false;
+            } else {
+                alert('Invalid credentials!');
+                return false;
+            }
+        }
+
+        function send2FACode() {
+            const email = localStorage.getItem('adminEmail') || 'aireftraders@gmail.com'; // Retrieve admin email
+            if (useMockBackend) {
+                // Mock backend response
+                const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+                sessionStorage.setItem('2FACode', generatedCode);
+                alert(`Your 2FA code is: ${generatedCode}`); // Simulate sending the code via alert
+                return;
+            }
+
+            fetch(`${backendURL}/api/send-2fa-code`, { // Backend API endpoint
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('A 2FA code has been sent to your email.');
+                } else {
+                    alert('Failed to send 2FA code. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending 2FA code:', error);
+                alert('An error occurred while sending the 2FA code.');
+            });
+        }
+
+        function validate2FA() {
+            const email = localStorage.getItem('adminEmail') || 'aireftraders@gmail.com'; // Retrieve admin email
+            const enteredCode = document.getElementById('twoFACode').value.trim();
+
+            if (useMockBackend) {
+                // Mock backend response
+                const storedCode = sessionStorage.getItem('2FACode');
+                if (enteredCode === storedCode) {
+                    sessionStorage.setItem('is2FAAuthenticated', true);
+                    window.location.href = 'admin.html'; // Redirect to admin page
+                } else {
+                    alert('Invalid 2FA code!');
+                }
+                return;
+            }
+
+            fetch(`${backendURL}/api/verify-2fa-code`, { // Backend API endpoint
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code: enteredCode })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    sessionStorage.setItem('is2FAAuthenticated', true);
+                    window.location.href = 'admin.html'; // Redirect to admin page
+                } else {
+                    alert('Invalid 2FA code!');
+                }
+            })
+            .catch(error => {
+                console.error('Error verifying 2FA code:', error);
+                alert('An error occurred while verifying the 2FA code.');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Info Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Info Page</h1>
+    <textarea id="infoContent"></textarea>
+    <button class="button" onclick="saveInfo()">Save</button>
+    <script>
+        // Load existing content from localStorage
+        const existingInfoContent = localStorage.getItem('infoPageContent') || "This is the Info page content.";
+        document.getElementById('infoContent').value = existingInfoContent;
+
+        // Save the updated content to localStorage
+        function saveInfo() {
+            const updatedContent = document.getElementById('infoContent').value.trim();
+            if (updatedContent) {
+                localStorage.setItem('infoPageContent', updatedContent);
+                alert('Info page updated successfully!');
+            } else {
+                alert('Content cannot be empty.');
+            }
+        }
+    </script>
+</body>
+</html>

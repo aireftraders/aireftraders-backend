@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: airef-traders
+    env: node
+    buildCommand: cd frontend && npm install && npm run build && cd .. && npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        value: <your-production-mongodb-uri>

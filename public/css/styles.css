@@ -1,0 +1,28 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #F5F6FA;
+    color: #2D3436;
+}
+
+/* Header Styles */
+#header {
+    background-color: #6C5CE7;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+/* Tab Content Styles */
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Add more styles as needed */

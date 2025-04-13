@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; }
+        .ad-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                   background: rgba(0,0,0,0.9); display: none; align-items: center; 
+                   justify-content: center; z-index: 10000; }
+        .ad-modal.active { display: flex; }
+        .ad-content { background: white; padding: 20px; border-radius: 10px; width: 350px; }
+        #verifyHumanBtn { background: #6C5CE7; color: white; border: none; padding: 15px; 
+                        border-radius: 8px; font-size: 18px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Fixed Ad Test</h1>
+    <button onclick="showAd()">Show Ad</button>
+
+    <script>
+        function showAd() {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div class="ad-modal active" id="testAd">
+                    <div class="ad-content">
+                        <h3>Advertisement</h3>
+                        <div id="adVerification">
+                            <button id="verifyHumanBtn">👉 Click to Continue 👈</button>
+                            <p>Please verify you're human</p>
+                        </div>
+                        <div id="adContainer" style="display:none;">
+                            <!-- Ad will load here -->
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            document.getElementById('verifyHumanBtn').addEventListener('click', function() {
+                document.getElementById('adVerification').style.display = 'none';
+                document.getElementById('adContainer').innerHTML = `
+                    <iframe src="https://whoockeg.top/4/9191531" 
+                            style="width:300px;height:250px;border:none;"></iframe>
+                    <p>Ad content loaded</p>
+                `;
+                document.getElementById('adContainer').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>

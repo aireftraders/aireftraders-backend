@@ -1,50 +1,43 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
-const connectDB = require('./config/database');
-const apiRoutes = require('./routes/apiRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const webRoutes = require('./routes/webRoutes');
-const withdrawalRoutes = require('./routes/withdrawalRoutes'); // Ensure this file exists
-const announcementRoutes = require('./routes/announcementRoutes'); // Ensure this file exists
-const streakRoutes = require('./routes/streakRoutes'); // Ensure this file exists
-const errorHandler = require('./middlewares/errorHandler');
-const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 
-// Connect to database
-connectDB();
-
-// Middleware
-app.use(helmet());
-
+// Basic CORS configuration
 const corsOptions = {
-    origin: 'https://v0-new-project-kpsjngutvqx.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+  origin: [
+    process.env.WEBAPP_URL,
+    'https://v0-new-project-kpsjngutvqx.vercel.app',
+    'https://aireftraders-backend.onrender.com',
+    ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : [])
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
 };
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(morgan('dev'));
+app.options('*', cors(corsOptions));
 
-// Routes
-app.use('/', webRoutes);
-app.use('/api', apiRoutes);
-app.use('/admin', adminRoutes);
-app.use('/api/withdrawals', withdrawalRoutes);
-app.use('/api/announcements', announcementRoutes);
-app.use('/api/streak', streakRoutes);
+// Ensure the backend URL is consistent
+const BACKEND_URL = process.env.BACKEND_URL || 'https://aireftraders-backend.onrender.com';
 
-// Error handling
-app.use(errorHandler);
+// Middleware to redirect incorrect frontend requests
+app.use((req, res, next) => {
+  if (req.headers.origin && req.headers.origin.includes('backend.onrender.com')) {
+    res.redirect(301, `${BACKEND_URL}${req.originalUrl}`);
+  } else {
+    next();
+  }
+});
+
+// Body parsing middleware
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 module.exports = app;
