@@ -1,4 +1,23 @@
+// Configure the backend URL
+const BACKEND_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000' 
+  : 'https://aireftraders-backend.onrender.com';
+
+// Test backend connection
+async function testBackendConnection() {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/health`);
+        if (!response.ok) throw new Error('Backend not responding');
+        console.log('Backend connection successful');
+    } catch (error) {
+        console.error('Backend connection failed:', error);
+        alert('⚠️ Cannot connect to server. Some features may not work.');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    testBackendConnection();
+
     // Load Header
     fetch('components/header.html')
         .then(response => response.text())

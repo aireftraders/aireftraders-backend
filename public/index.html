@@ -3770,6 +3770,18 @@
             });
         });
     </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const adsWatched = parseInt(localStorage.getItem('adsWatched')) || 0;
+
+        if (window.location.hash === "#game") {
+          if (adsWatched < 20) {
+            alert("Please watch 20 ads before accessing the game section.");
+            window.location.href = "ads.html";
+          }
+        }
+      });
+    </script>
 </body>
 </html>
 

@@ -150,6 +150,8 @@
         <button id="nextAdBtn">Next Ad</button>
         <button id="accessNowBtn">Access Now</button>
         <div id="loading">Verifying ad completion...</div>
+
+        <button onclick="watchAd()">Watch Ad</button>
     </div>
 
     <script>
@@ -329,6 +331,19 @@
             }
         `;
         document.head.appendChild(style);
+
+        function watchAd() {
+            let adsWatched = parseInt(localStorage.getItem('adsWatched')) || 0;
+            adsWatched++;
+            localStorage.setItem('adsWatched', adsWatched);
+
+            if (adsWatched >= 20) {
+                alert("You've watched 20 ads. Redirecting to the game section...");
+                window.location.href = "index.html#game";
+            } else {
+                alert(`Ad watched! (${adsWatched}/20)`);
+            }
+        }
     </script>
 </body>
 </html>

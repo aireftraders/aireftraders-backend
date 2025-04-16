@@ -5,21 +5,16 @@ const path = require('path');
 
 const app = express();
 
-// Updated CORS configuration to include the current frontend Render URL
+// Updated CORS configuration to include the frontend Render URL
 const corsOptions = {
   origin: [
-    process.env.WEBAPP_URL,
-    'https://aireftraders-frontend.onrender.com', // Updated frontend Render URL
-    'https://aireftraders-backend.onrender.com',
-    ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : [])
+    'https://aireftraders-frontend.onrender.com', // Frontend Render URL
+    'http://localhost:5500' // For local development
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 // Ensure the backend URL is consistent
 const BACKEND_URL = process.env.BACKEND_URL || 'https://aireftraders-backend.onrender.com';
@@ -52,5 +47,10 @@ app.get('/test-db', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+const adRoutes = require('./routes/adRoutes');
+
+// Use adRoutes for ad-related endpoints
+app.use('/api/ads', adRoutes);
 
 module.exports = app;

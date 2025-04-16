@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const adController = require('../controllers/adController');
 const Ad = require('../models/Ad'); // Assuming Ad model is defined
+const User = require('../models/User'); // Assuming a User model exists
 const { authenticate } = require('../middlewares/auth');
 
 // Log route hits
@@ -49,5 +50,50 @@ router.post('/view', async (req, res) => {
 
 // New route for checking ad access
 router.get('/ads/check-access', authenticate, adController.checkAdAccess);
+
+// Endpoint to track ad views
+router.post('/track-ad-view', async (req, res) => {
+  try {
+    const userId = req.session.userId; // Assuming session management is in place
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Increment ad view count in the database for the user
+    const user = await User.findByIdAndUpdate(userId, { $inc: { adsWatched: 1 } }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Ad view recorded', adsWatched: user.adsWatched });
+  } catch (error) {
+    console.error('Error tracking ad view:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Endpoint to check access to the game section
+router.get('/check-access', async (req, res) => {
+  try {
+    const userId = req.session.userId; // Assuming session management is in place
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Retrieve user's ad view count from the database
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const hasAccess = user.adsWatched >= 20;
+    res.json({ hasAccess });
+  } catch (error) {
+    console.error('Error checking access:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 module.exports = router;
