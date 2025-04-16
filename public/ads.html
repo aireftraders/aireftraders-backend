@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complete Ads to Continue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .ad-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        #adFrameContainer {
+            width: 100%;
+            min-height: 600px;
+            margin: 30px auto;
+            border: 3px solid #e0e0e0;
+            background: #f9f9f9;
+            overflow: hidden;
+            position: relative;
+        }
+        #adFrame {
+            width: 100%;
+            height: 100%;
+            min-height: 600px;
+            border: none;
+        }
+        .progress-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+            gap: 10px;
+        }
+        .progress-step {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .progress-step.active {
+            background: #6C5CE7;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(108, 92, 231, 0.6);
+        }
+        .progress-step.completed {
+            background: #00B894;
+            color: white;
+        }
+        #nextAdBtn, #accessNowBtn {
+            background: #6C5CE7;
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            margin: 30px 0;
+            display: none;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        #nextAdBtn:hover, #accessNowBtn:hover {
+            background: #5649c0;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        #timerDisplay {
+            margin: 30px 0;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        #loading {
+            display: none;
+            margin: 30px 0;
+            color: #6C5CE7;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        #adPurpose {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 768px) {
+            .ad-container {
+                width: 98%;
+                padding: 20px;
+            }
+            #adFrameContainer, #adFrame {
+                min-height: 400px;
+            }
+            .progress-step {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+            #nextAdBtn, #accessNowBtn {
+                padding: 15px 30px;
+                font-size: 18px;
+            }
+            h2 {
+                font-size: 28px;
+            }
+            #adPurpose {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ad-container">
+        <h2>Watch Ads to Unlock Access</h2>
+        <p id="adPurpose">Complete 20 ads to continue.</p>
+        
+        <div class="progress-container" id="progressSteps"></div>
+        
+        <!-- Ad Container - This will show the ad -->
+        <div id="adFrameContainer">
+            <iframe id="adFrame" name="adFrame" frameborder="0" scrolling="no"></iframe>
+        </div>
+        
+        <div id="timerDisplay">Ad will complete in <span id="timerCount">15</span> seconds</div>
+        <button id="nextAdBtn">Next Ad</button>
+        <button id="accessNowBtn">Access Now</button>
+        <div id="loading">Verifying ad completion...</div>
+    </div>
+
+    <script>
+        const totalAds = 20;
+        let currentAd = 0;
+        let sessionId = null;
+        let timer = null;
+        let redirectTimer = null;
+        let redirectTo = "/games";
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            redirectTo = urlParams.get('redirectTo') || "/games";
+
+            if (redirectTo === "/trading") {
+                document.getElementById('adPurpose').textContent = "Complete 20 ads to continue AI trading.";
+            }
+
+            try {
+                sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
+                renderProgressSteps();
+                startAdProcess();
+            } catch (error) {
+                console.error("Failed to start ad session:", error);
+                alert("Failed to initialize ad session. Please refresh the page.");
+            }
+        });
+
+        function renderProgressSteps() {
+            const container = document.getElementById('progressSteps');
+            container.innerHTML = '';
+            
+            const start = Math.max(0, currentAd - 5);
+            const end = Math.min(totalAds, start + 11);
+            
+            for (let i = start; i < end; i++) {
+                const step = document.createElement('div');
+                step.className = 'progress-step';
+                step.textContent = i + 1;
+                if (i < currentAd) step.classList.add('completed');
+                if (i === currentAd) step.classList.add('active');
+                container.appendChild(step);
+            }
+        }
+
+        function startAdProcess() {
+            if (currentAd >= totalAds) {
+                showCompletion();
+                return;
+            }
+            
+            resetUIForNewAd();
+            loadAd();
+            startTimer();
+        }
+
+        function resetUIForNewAd() {
+            document.getElementById('timerDisplay').style.display = 'block';
+            document.getElementById('nextAdBtn').style.display = 'none';
+            document.getElementById('accessNowBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('timerCount').textContent = '15';
+            document.getElementById('timerCount').style.color = '';
+        }
+
+        function loadAd() {
+            if (currentAd >= totalAds) {
+                window.location.href = redirectTo + "?ads_completed=true";
+                return;
+            }
+
+            const adFrameContainer = document.getElementById('adFrameContainer');
+            adFrameContainer.innerHTML = ''; // Clear previous ad
+
+            // Insert Adsterra IFRAME SYNC code
+            const adScript1 = document.createElement('script');
+            adScript1.type = 'text/javascript';
+            adScript1.innerHTML = `
+                atOptions = {
+                    'key' : '8a1d6d42d6addf614a0b20c144270316',
+                    'format' : 'iframe',
+                    'height' : 250,
+                    'width' : 300,
+                    'params' : {}
+                };
+            `;
+
+            const adScript2 = document.createElement('script');
+            adScript2.type = 'text/javascript';
+            adScript2.src = '//innumerablemakeupreligious.com/8a1d6d42d6addf614a0b20c144270316/invoke.js';
+
+            adFrameContainer.appendChild(adScript1);
+            adFrameContainer.appendChild(adScript2);
+
+            startTimer(); // Start the timer immediately after inserting the ad
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            let seconds = 15;
+            updateTimerDisplay(seconds);
+            
+            timer = setInterval(() => {
+                seconds--;
+                updateTimerDisplay(seconds);
+                
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    onTimerComplete();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay(seconds) {
+            const timerElement = document.getElementById('timerCount');
+            timerElement.textContent = seconds;
+            timerElement.style.color = seconds <= 5 ? '#e74c3c' : '';
+            timerElement.style.fontWeight = 'bolder';
+            
+            if (seconds <= 5) {
+                timerElement.style.animation = 'pulse 0.5s infinite alternate';
+            } else {
+                timerElement.style.animation = 'none';
+            }
+        }
+
+        function onTimerComplete() {
+            document.getElementById('nextAdBtn').style.display = 'block';
+        }
+
+        function showCompletion() {
+            document.getElementById('adFrameContainer').innerHTML = `
+                <div style="text-align:center;padding:40px;color:#00B894;font-size:24px;font-weight:bold;">
+                    All ads completed! You can now access the content.
+                </div>
+            `;
+            document.getElementById('timerDisplay').style.display = 'none';
+            document.getElementById('nextAdBtn').style.display = 'none';
+            document.getElementById('accessNowBtn').style.display = 'block';
+            
+            clearTimeout(redirectTimer);
+            redirectTimer = setTimeout(() => {
+                completeAdProcess();
+            }, 5000);
+        }
+
+        function completeAdProcess() {
+            window.location.href = redirectTo + "?ads_completed=true";
+        }
+
+        // Event listeners
+        document.getElementById('nextAdBtn').addEventListener('click', () => {
+            currentAd++;
+            renderProgressSteps();
+            startAdProcess();
+        });
+
+        document.getElementById('accessNowBtn').addEventListener('click', () => {
+            clearTimeout(redirectTimer);
+            completeAdProcess();
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (currentAd < totalAds) {
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to leave? Your progress will be lost.';
+            }
+        });
+
+        // Add pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                from { transform: scale(1); }
+                to { transform: scale(1.2); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

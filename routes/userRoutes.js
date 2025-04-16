@@ -17,5 +17,6 @@ router.delete('/:id', authenticate, userController.deleteUser);
 // User routes
 router.get('/:id/transactions', authenticate, userController.getUserTransactions);
 router.get('/:id/referrals', authenticate, userController.getUserReferrals);
+router.get('/balance-and-capital', authenticate, userController.getUserBalanceAndCapital);
 
 module.exports = router;

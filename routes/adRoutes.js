@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const adController = require('../controllers/adController');
 const Ad = require('../models/Ad'); // Assuming Ad model is defined
+const { authenticate } = require('../middlewares/auth');
 
 // Log route hits
 router.get('/ads/:gameType', async (req, res) => {
@@ -45,5 +46,8 @@ router.post('/view', async (req, res) => {
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
+
+// New route for checking ad access
+router.get('/ads/check-access', authenticate, adController.checkAdAccess);
 
 module.exports = router;

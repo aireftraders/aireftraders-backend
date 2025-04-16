@@ -65,3 +65,35 @@ exports.processReferral = async (userId, referrerCode) => {
     return { success: false, message: error.message };
   }
 };
+
+exports.checkReferralBonus = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Fetch user data
+    const user = await User.findById(userId).populate('referrals');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // Check if the user has 6 completed referrals within 24 hours
+    const now = new Date();
+    const signUpTime = new Date(user.createdAt);
+    const timeDifference = (now - signUpTime) / (1000 * 60 * 60); // Time difference in hours
+
+    const completedReferrals = user.referrals.filter(ref => ref.isCompleted);
+
+    if (completedReferrals.length >= 6 && timeDifference <= 24) {
+      // Add bonus to user's balance
+      user.balance += 5000;
+      await user.save();
+
+      return res.json({ success: true, message: 'Bonus of ₦5000 awarded for completing 6 referrals within 24 hours.' });
+    }
+
+    res.json({ success: false, message: 'Referral bonus criteria not met.' });
+  } catch (error) {
+    console.error('Error checking referral bonus:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+};

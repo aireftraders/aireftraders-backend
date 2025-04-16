@@ -1,5 +1,7 @@
 const PaymentBatch = require('../models/PaymentBatch');
 const Ad = require('../models/Ad');
+const schedule = require('node-schedule');
+const User = require('../models/User');
 
 // Function to calculate batch earnings
 async function calculateBatchEarnings(batch) {
@@ -54,3 +56,17 @@ exports.checkBatches = async () => {
     console.error('Critical error in batch monitoring:', error);
   }
 };
+
+// Reset trading at midnight Nigerian Time (UTC+1)
+schedule.scheduleJob('0 0 * * *', async () => {
+    try {
+        console.log('Resetting trading for all users at midnight (Nigerian Time)...');
+
+        // Turn off trading for all users
+        await User.updateMany({}, { tradingActive: false });
+
+        console.log('Trading reset completed.');
+    } catch (error) {
+        console.error('Error resetting trading:', error);
+    }
+});

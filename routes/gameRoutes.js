@@ -7,5 +7,6 @@ router.post('/memory', authenticate, gameController.playMemoryGame);
 router.post('/dice', authenticate, gameController.playDiceGame);
 router.post('/wheel', authenticate, gameController.spinWheel);
 router.get('/history', authenticate, gameController.getGameHistory);
+router.post('/update-progress', authenticate, gameController.updateGameProgress);
 
 module.exports = router;

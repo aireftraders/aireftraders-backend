@@ -40,4 +40,17 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Test database connection route
+app.get('/test-db', async (req, res) => {
+  try {
+    console.log('[DEBUG] Testing database connection');
+    const result = await mongoose.connection.db.admin().ping();
+    console.log('[DEBUG] Database connection successful:', result);
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error('[ERROR] Database connection failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = app;

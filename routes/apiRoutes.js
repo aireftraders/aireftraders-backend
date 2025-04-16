@@ -63,4 +63,7 @@ router.post('/user/login', controllers.user.login);
 // Add route for creating a new user
 router.post('/api/user', controllers.user.createUser);
 
+// Add route for calculating daily profit in trading module
+router.post('/trading/calculate-daily-profit', authenticate, controllers.trading.calculateDailyProfit);
+
 module.exports = router;

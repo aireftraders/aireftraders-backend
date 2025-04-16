@@ -94,4 +94,21 @@ module.exports = {
       res.status(500).json({ error: err.message });
     }
   },
+
+  getUserBalanceAndCapital: async (req, res) => {
+    try {
+      const userId = req.user._id;
+
+      // Fetch user data
+      const user = await User.findById(userId, 'balance tradingCapital');
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found.' });
+      }
+
+      res.json({ success: true, balance: user.balance, tradingCapital: user.tradingCapital });
+    } catch (error) {
+      console.error('Error fetching user balance and capital:', error);
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+  },
 };

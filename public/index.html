@@ -1979,14 +1979,6 @@
     <!-- Admin Panel Button -->
     <button id="adminPanelBtn" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 100;" class="primary">Admin Panel</button>
     
-    <!-- Audio elements for game sounds -->
-    <audio id="flipSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
-    <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
-    <audio id="loseSound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-lose-2027.mp3" preload="auto"></audio>
-    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
-    <audio id="coinFlipSound" src="https://assets.mixkit.co/sfx/preview/mixkit-coin-flip-1940.mp3" preload="auto"></audio>
-    <audio id="coinLandSound" src="https://assets.mixkit.co/sfx/preview/mixkit-metal-hit-impact-2065.mp3" preload="auto"></audio>
-    
     <script>
         // Redirect "Learn More About Our Approach" button to the Future Investment Opportunities section
         document.getElementById('learnMoreBtn').addEventListener('click', () => {
@@ -2216,7 +2208,6 @@
             
             flipCard: function(card) {
                 if (this.flippedCards.length < 2 && !card.classList.contains('flipped') && !card.classList.contains('matched')) {
-                    document.getElementById('clickSound').play();
                     card.classList.add('flipped');
                     card.textContent = card.dataset.value;
                     this.flippedCards.push(card);
@@ -2244,7 +2235,6 @@
                     this.earnings += 800;
                     this.updateStats();
                     addGameEarnings(800);
-                    document.getElementById('winSound').play();
                     
                     if (this.matchedPairs === 8) {
                         showNotification('🎉 You won ₦6,400!');
@@ -2259,7 +2249,6 @@
                         card2.classList.remove('flipped');
                         card1.textContent = '?';
                         card2.textContent = '?';
-                        document.getElementById('loseSound').play();
                     }, 500);
                 }
                 
@@ -2326,7 +2315,6 @@
                 this.attempts--;
                 this.updateAttempts();
                 this.updateServerAttempts();
-                document.getElementById('clickSound').play();
                 
                 const roll = Math.floor(Math.random() * 6) + 1;
                 this.lastRoll = roll;
@@ -2346,10 +2334,8 @@
                             this.earnings += 800;
                             this.updateStats();
                             addGameEarnings(800);
-                            document.getElementById('winSound').play();
                         } else {
                             showNotification('Try again!');
-                            document.getElementById('loseSound').play();
                         }
                         
                         if (this.attempts <= 0) {
@@ -2426,25 +2412,21 @@
                 document.querySelector('.snake-btn.up').addEventListener('click', () => {
                     if (this.direction !== 'down' && this.gameStarted) {
                         this.direction = 'up';
-                        document.getElementById('clickSound').play();
                     }
                 });
                 document.querySelector('.snake-btn.down').addEventListener('click', () => {
                     if (this.direction !== 'up' && this.gameStarted) {
                         this.direction = 'down';
-                        document.getElementById('clickSound').play();
                     }
                 });
                 document.querySelector('.snake-btn.left').addEventListener('click', () => {
                     if (this.direction !== 'right' && this.gameStarted) {
                         this.direction = 'left';
-                        document.getElementById('clickSound').play();
                     }
                 });
                 document.querySelector('.snake-btn.right').addEventListener('click', () => {
                     if (this.direction !== 'left' && this.gameStarted) {
                         this.direction = 'right';
-                        document.getElementById('clickSound').play();
                     }
                 });
                 
@@ -2460,7 +2442,6 @@
                     document.getElementById('startSnakeBtn').style.display = 'none';
                     document.querySelector('.snake-controls').style.display = 'grid';
                     this.startGame();
-                    document.getElementById('clickSound').play();
                 });
                 
                 this.updateAttempts();
@@ -2533,7 +2514,6 @@
                     this.updateStats();
                     addGameEarnings(800);
                     this.earnings += 800;
-                    document.getElementById('winSound').play();
                     this.placeFood();
                     
                     // Don't remove tail if food eaten - snake grows
@@ -2625,7 +2605,6 @@
                 this.attempts--;
                 this.updateAttempts();
                 this.updateServerAttempts();
-                document.getElementById('loseSound').play();
                 
                 document.getElementById('startSnakeBtn').style.display = 'block';
                 document.querySelector('.snake-controls').style.display = 'none';
@@ -2834,7 +2813,6 @@
                 this.attempts--;
                 this.updateAttempts();
                 this.updateServerAttempts();
-                document.getElementById('clickSound').play();
                 
                 const question = this.questions[this.currentQuestion];
                 const options = document.querySelectorAll('.trivia-option');
@@ -2846,12 +2824,10 @@
                     addGameEarnings(800);
                     this.updateStats();
                     showNotification('✅ Correct! You earned ₦800');
-                    document.getId('winSound').play();
                 } else {
                     options[selectedOption-1].classList.add('incorrect');
                     options[question.answer-1].classList.add('correct');
                     showNotification('❌ Wrong answer! Try again');
-                    document.getElementById('loseSound').play();
                 }
                 
                 // Mark question as used
@@ -2952,7 +2928,6 @@
                 this.attempts--;
                 this.updateAttempts();
                 this.updateServerAttempts();
-                document.getElementById('clickSound').play();
                 
                 this.spinning = true;
                 const spinBtn = document.getElementById('spinWheelBtn');
@@ -2990,10 +2965,8 @@
                     addGameEarnings(prize);
                     
                     if (prize > 0) {
-                        document.getElementById('winSound').play();
                         showNotification(`🎡 You won ₦${prize}!`);
                     } else {
-                        document.getElementById('loseSound').play();
                         showNotification('Better luck next time!');
                     }
                     
@@ -3774,6 +3747,27 @@
             } else {
                 window.location.href = '/ads?redirectTo=/trading';
             }
+        });
+
+        // Check if the user has completed the required ads before accessing games
+        document.querySelectorAll('.game-card button').forEach(button => {
+            button.addEventListener('click', () => {
+                fetch('/api/ads/check-access', { credentials: 'include' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.hasAccess) {
+                            // Redirect to ads.html if access is not granted
+                            window.location.href = '/ads.html';
+                        } else {
+                            // Allow access to the game
+                            window.location.href = '/components/games.html';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking ad access:', error);
+                        alert('An error occurred. Please try again later.');
+                    });
+            });
         });
     </script>
 </body>
