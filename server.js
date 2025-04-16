@@ -21,10 +21,10 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(cors());
 }
 
-// Update CORS configuration to include the specific frontend URL
+// Updated CORS configuration to include the current frontend Render URL
 app.use(cors({
   origin: [
-    'https://v0-new-project-kpsjngutvqx.vercel.app',
+    'https://aireftraders-frontend.onrender.com', // Updated frontend Render URL
     'https://aireftraders-backend.onrender.com'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],

@@ -5,11 +5,11 @@ const path = require('path');
 
 const app = express();
 
-// Basic CORS configuration
+// Updated CORS configuration to include the current frontend Render URL
 const corsOptions = {
   origin: [
     process.env.WEBAPP_URL,
-    'https://v0-new-project-kpsjngutvqx.vercel.app',
+    'https://aireftraders-frontend.onrender.com', // Updated frontend Render URL
     'https://aireftraders-backend.onrender.com',
     ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : [])
   ],
